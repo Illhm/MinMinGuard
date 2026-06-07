@@ -3,6 +3,7 @@ package tw.fatminmin.xposed.minminguard.blocker;
 import android.content.Context;
 import android.view.View;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -105,6 +106,35 @@ public final class ApiBlocking
                 Util.log(packageName, String.format("blockAdFunction: Method %s not found in %s.", adFunc, adFunc));
             }
 
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+        Used for blocking object construction
+     */
+    public static boolean blockConstructor(final String packageName, final String adClass, final XC_LoadPackage.LoadPackageParam lpparam)
+    {
+        try
+        {
+            Class<?> adView = XposedHelpers.findClass(adClass, lpparam.classLoader);
+            XposedBridge.hookAllConstructors(adView, new XC_MethodHook()
+            {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param)
+                {
+                    String debugMsg = String.format("blockConstructor: Detect %s constructor in %s", adClass, packageName);
+
+                    Util.log(packageName, debugMsg);
+
+                    param.setResult(new Object());
+                }
+            });
+        }
+        catch (ClassNotFoundError e)
+        {
             return false;
         }
 

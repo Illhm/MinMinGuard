@@ -1,10 +1,7 @@
 package tw.fatminmin.xposed.minminguard.blocker.adnetwork;
 
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.XposedHelpers.ClassNotFoundError;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
+import tw.fatminmin.xposed.minminguard.blocker.ApiBlocking;
 import tw.fatminmin.xposed.minminguard.blocker.Blocker;
 import tw.fatminmin.xposed.minminguard.blocker.Util;
 
@@ -16,30 +13,11 @@ public class mAdserve extends Blocker
 
     public boolean handleLoadPackage(final String packageName, LoadPackageParam lpparam)
     {
-
-        try
-        {
-            //TODO Add blockConstructor to ApiBlocking, so we dont have to do this hack..
-            Class<?> adView = XposedHelpers.findClass("com.adsdk.sdk.banner.InAppWebView", lpparam.classLoader);
-            XposedBridge.hookAllConstructors(adView, new XC_MethodHook()
-            {
-
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param)
-                {
-                    Util.log(packageName, "Detect mAdserve InAppWebView constructor in " + packageName);
-
-                    param.setResult(new Object());
-                }
-            });
-
+        if (ApiBlocking.blockConstructor(packageName, BANNER, lpparam)) {
             Util.log(packageName, packageName + " uses mAdserve");
+            return true;
         }
-        catch (ClassNotFoundError e)
-        {
-            return false;
-        }
-        return true;
+        return false;
     }
 
     @Override
