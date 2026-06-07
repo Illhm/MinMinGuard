@@ -8,10 +8,8 @@ import de.robv.android.xposed.callbacks.XC_LayoutInflated;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import tw.fatminmin.xposed.minminguard.blocker.Util;
 
-//TODO Fix formatting
-final class Train
+public final class Train
 {
-
     private static String pkg = "idv.nightgospel.TWRailScheduleLookUp";
 
     private Train() throws InstantiationException
@@ -31,9 +29,8 @@ final class Train
             @Override
             protected void beforeHookedMethod(MethodHookParam param)
             {
-
-                Util.log(pkg, "Prevent WSAdBanner setWSAdListener " + pkg);
-
+                String debugMsg = String.format("Prevent WSAdBanner setWSAdListener %s", pkg);
+                Util.log(pkg, debugMsg);
                 param.setResult(new Object());
             }
         });
@@ -48,16 +45,16 @@ final class Train
 
         resparam.res.hookLayout(pkg, "layout", "adlayout", new XC_LayoutInflated()
         {
-
             @Override
             public void handleLayoutInflated(LayoutInflatedParam liparam)
             {
-
-                Util.log(pkg, "Handle train ad layout");
-
+                String debugMsg = String.format("Handle train ad layout %s", pkg);
+                Util.log(pkg, debugMsg);
                 View ad = liparam.view.findViewById(liparam.res.getIdentifier("adLayout", "id", pkg));
-
-                ad.setVisibility(View.GONE);
+                if (ad != null)
+                {
+                    ad.setVisibility(View.GONE);
+                }
             }
         });
     }
