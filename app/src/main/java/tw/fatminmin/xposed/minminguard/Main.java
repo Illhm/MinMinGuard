@@ -62,6 +62,11 @@ import tw.fatminmin.xposed.minminguard.blocker.adnetwork.ChartboostModern;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.InMobiModern;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.AppodealModern;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.YandexAdsModern;
+import tw.fatminmin.xposed.minminguard.blocker.adnetwork.FyberModern;
+import tw.fatminmin.xposed.minminguard.blocker.adnetwork.TapjoyModern;
+import tw.fatminmin.xposed.minminguard.blocker.adnetwork.SmaatoModern;
+import tw.fatminmin.xposed.minminguard.blocker.adnetwork.StartIoModern;
+import tw.fatminmin.xposed.minminguard.blocker.adnetwork.AmazonPublisherServicesModern;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.GenericModernAdHeuristic;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.GoogleGmsDoubleClick;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Hodo;
@@ -109,11 +114,11 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
 
     public static Blocker[] blockers = {
             /* Popular adnetwork */
-            new Ad2iction(), new Adbert(), new Adcolony(), new Adfurikun(), new AdMarvel(), new AppodealMRAID(), new GoogleAdmob(), new GoogleGms(), new GoogleMobileAdsModern(), new Adtech(), new Amazon(), new Amobee(),
+            new Ad2iction(), new Adbert(), new Adcolony(), new Adfurikun(), new AdMarvel(), new AppodealMRAID(), new GoogleAdmob(), new GoogleGms(), new GoogleMobileAdsModern(), new Adtech(), new Amazon(), new AmazonPublisherServicesModern(), new Amobee(),
             new Aotter(), new AppBrain(), new Applovin(), new AppLovinMaxModern(), new Appnext(), new Avocarrot(), new Bonzai(), new Chartboost(), new ChartboostModern(), new Clickforce(), new Domob(), new Facebook(), new MetaAudienceNetworkModern(),
-            new Freewheel(), new Flurry(), new GoogleGmsDoubleClick(), new Hodo(), new Inmobi(), new InMobiModern(), new Intowow(), new Ironsource(), new IronSourceModern(), new KuAd(), new mAdserve(), new Madvertise(),
-            new MasAd(), new MdotM(), new Millennial(), new Mobclix(), new MobFox(), new MoPub(), new Nend(), new Og(), new Onelouder(), new OpenX(), new SmartAdserver(), new SourcekitMRAID(),
-            new Startapp(), new Tapfortap(), new TWMads(), new UnityAds(), new UnityAdsModern(), new Vpadn(), new Vpon(), new Vungle(), new VungleModern(), new Waystorm(), new Yandex(), new YandexAdsModern(),
+            new Freewheel(), new Flurry(), new FyberModern(), new GoogleGmsDoubleClick(), new Hodo(), new Inmobi(), new InMobiModern(), new Intowow(), new Ironsource(), new IronSourceModern(), new KuAd(), new mAdserve(), new Madvertise(),
+            new MasAd(), new MdotM(), new Millennial(), new Mobclix(), new MobFox(), new MoPub(), new Nend(), new Og(), new Onelouder(), new OpenX(), new SmaatoModern(), new SmartAdserver(), new SourcekitMRAID(),
+            new Startapp(), new StartIoModern(), new Tapfortap(), new TapjoyModern(), new TWMads(), new UnityAds(), new UnityAdsModern(), new Vpadn(), new Vpon(), new Vungle(), new VungleModern(), new Waystorm(), new Yandex(), new YandexAdsModern(),
             new AppodealModern(), new MintegralModern(), new PangleModern(), new GenericModernAdHeuristic(),
             /* Custom Mod*/
     };

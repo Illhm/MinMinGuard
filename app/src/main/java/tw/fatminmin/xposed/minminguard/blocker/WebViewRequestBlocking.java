@@ -86,8 +86,15 @@ public class WebViewRequestBlocking {
     private static boolean shouldBlock(String url) {
         if (url == null || url.trim().isEmpty()) return false;
 
-        if (AdHeuristic.isRewarded(url)) {
-            Util.log("WebViewRequestBlocking", "Allowed rewarded ad: " + url);
+        // Strip query string for logging and simpler matching
+        String cleanUrl = url;
+        int queryIndex = url.indexOf('?');
+        if (queryIndex > 0) {
+            cleanUrl = url.substring(0, queryIndex);
+        }
+
+        if (AdHeuristic.isRewarded(cleanUrl)) {
+            Util.log("WebViewRequestBlocking", "Allowed rewarded ad: " + cleanUrl);
             return false;
         }
 
@@ -95,12 +102,6 @@ public class WebViewRequestBlocking {
             Uri uri = Uri.parse(url);
             String host = uri.getHost();
 
-            // Strip query string for logging and simpler matching
-            String cleanUrl = url;
-            int queryIndex = url.indexOf('?');
-            if (queryIndex > 0) {
-                cleanUrl = url.substring(0, queryIndex);
-            }
             cleanUrl = cleanUrl.toLowerCase().trim();
 
             if (host != null) {
@@ -123,7 +124,7 @@ public class WebViewRequestBlocking {
             }
         } catch (Throwable t) {
             // fallback if URI parse fails
-            String cleanUrl = url.toLowerCase().trim();
+            cleanUrl = cleanUrl.toLowerCase().trim();
             for (String adUrl : Main.patterns) {
                 if (adUrl == null || adUrl.trim().isEmpty()) continue;
                 String pattern = adUrl.toLowerCase().trim();

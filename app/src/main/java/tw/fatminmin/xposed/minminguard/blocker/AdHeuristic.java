@@ -38,7 +38,9 @@ public class AdHeuristic {
             return false;
         }
 
-        return name.toLowerCase().contains("reward");
+        String lowerName = name.toLowerCase();
+        return lowerName.contains("reward") ||
+               lowerName.contains("serversideverification");
     }
 
     public static boolean shouldAutoBlock(String name) {
