@@ -8,18 +8,19 @@ public class Appnext extends Blocker
 {
     private static final String INTER_ADS = "com.appnext.ads.interstitial.Interstitial";
 
-    private static final String VIDEO_ADS = "com.appnext.ads.fullscreen.";
+    private static final String VIDEO_ADS = "com.appnext.ads.fullscreen.Video";
+    private static final String FULLSCREEN_ADS = "com.appnext.ads.fullscreen.FullscreenAd";
 
     @Override
     public boolean handleLoadPackage(String packageName, XC_LoadPackage.LoadPackageParam lpparam)
     {
         boolean result = false;
 
-        result = ApiBlocking.blockAdFunction(packageName, INTER_ADS, "loadAd", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, INTER_ADS, "showAd", lpparam);
+        result = ApiBlocking.blockAdFunctionWithSafeDefault(packageName, INTER_ADS, "loadAd", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, INTER_ADS, "showAd", lpparam);
 
-        result |= ApiBlocking.blockAdFunction(packageName, VIDEO_ADS, "loadAd", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, VIDEO_ADS, "showAd", lpparam);
+        // Do not block Video ads blindly to protect rewarded video flows.
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, FULLSCREEN_ADS, "showAd", lpparam);
 
         return result;
     }

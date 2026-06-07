@@ -33,12 +33,10 @@ public class Yandex extends Blocker
         result |= ApiBlocking.blockAdFunction(packageName, INTERSTITIAL, "loadAd", lpparam);
 
         result |= ApiBlocking.blockAdFunction(packageName, NATIVE, "loadAd", lpparam);
-//        result |= ApiBlocking.blockAdFunction(packageName, NATIVE_APP_INSTALL, "getNativeAd", lpparam);
-//        result |= ApiBlocking.blockAdFunction(packageName, NATIVE_CONTENT, "getNativeAd", lpparam);
-//        result |= ApiBlocking.blockAdFunction(packageName, NATIVE_IMAGE, LOAD_AD, lpparam);
 
-        result |= ApiBlocking.blockAdFunction(packageName, VIDEO, "loadBlocksInfo", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, VIDEO, "loadVideoAds", lpparam);
+        // Omit VIDEO blocks to protect potential rewarded video flows natively.
+        // result |= ApiBlocking.blockAdFunction(packageName, VIDEO, "loadBlocksInfo", lpparam);
+        // result |= ApiBlocking.blockAdFunction(packageName, VIDEO, "loadVideoAds", lpparam);
 
         return result;
     }

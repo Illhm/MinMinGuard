@@ -21,13 +21,13 @@ public class Facebook extends Blocker
         result = ApiBlocking.removeBanner(packageName, BANNER, "loadAd", lpparam);
         result |= ApiBlocking.removeBanner(packageName, BANNER, "setAdListener", lpparam);
 
-        result |= ApiBlocking.blockAdFunction(packageName, INTER, "loadAd", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, INTER, "loadAdFromBid", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, INTER, "loadAd", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, INTER, "loadAdFromBid", lpparam);
 
-        result |= ApiBlocking.blockAdFunction(packageName, NATIVE_AD, "loadAd", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, NATIVE_AD, "loadAdFromBid", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, NATIVE_AD, "loadAd", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, NATIVE_AD, "loadAdFromBid", lpparam);
 
-        result |= ApiBlocking.blockAdFunction(packageName, NATIVE_ADS_MGR, "loadAds", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, NATIVE_ADS_MGR, "loadAds", lpparam);
 
         return result;
     }
