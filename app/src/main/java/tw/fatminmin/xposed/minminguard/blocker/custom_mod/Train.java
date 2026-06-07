@@ -25,7 +25,8 @@ final class Train {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
                 Util.log(pkg, "Prevent WSAdBanner setWSAdListener " + pkg);
-                param.setResult(new Object());
+                param.setResult(null); // return null as safe default
+                Util.notifyRemoveAdView(null, pkg, 1);
             }
         });
     }
@@ -40,7 +41,7 @@ final class Train {
             public void handleLayoutInflated(LayoutInflatedParam liparam) {
                 Util.log(pkg, "Handle train ad layout");
                 View ad = liparam.view.findViewById(liparam.res.getIdentifier("adLayout", "id", pkg));
-                ad.setVisibility(View.GONE);
+                tw.fatminmin.xposed.minminguard.blocker.ViewBlocking.removeAdView(pkg, ad);
             }
         });
     }
