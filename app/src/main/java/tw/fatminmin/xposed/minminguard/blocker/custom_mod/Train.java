@@ -29,7 +29,8 @@ public final class Train
             @Override
             protected void beforeHookedMethod(MethodHookParam param)
             {
-                Util.log(pkg, "Prevent WSAdBanner setWSAdListener " + pkg);
+                String debugMsg = String.format("Prevent WSAdBanner setWSAdListener %s", pkg);
+                Util.log(pkg, debugMsg);
                 param.setResult(new Object());
             }
         });
@@ -47,9 +48,13 @@ public final class Train
             @Override
             public void handleLayoutInflated(LayoutInflatedParam liparam)
             {
-                Util.log(pkg, "Handle train ad layout");
+                String debugMsg = String.format("Handle train ad layout %s", pkg);
+                Util.log(pkg, debugMsg);
                 View ad = liparam.view.findViewById(liparam.res.getIdentifier("adLayout", "id", pkg));
-                ad.setVisibility(View.GONE);
+                if (ad != null)
+                {
+                    ad.setVisibility(View.GONE);
+                }
             }
         });
     }
