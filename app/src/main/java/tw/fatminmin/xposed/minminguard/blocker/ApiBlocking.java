@@ -94,7 +94,19 @@ public final class ApiBlocking
                     Util.log(packageName, debugMsg);
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -126,7 +138,19 @@ public final class ApiBlocking
 
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -158,7 +182,19 @@ public final class ApiBlocking
 
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -190,7 +226,19 @@ public final class ApiBlocking
 
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
