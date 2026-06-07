@@ -8,7 +8,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import tw.fatminmin.xposed.minminguard.Main;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public final class NameBlocking
 {
-    private static Map<String, Boolean> cache = new HashMap<>();
+    private static Map<String, Boolean> cache = new ConcurrentHashMap<>();
 
     private static boolean matchBannerName(String clazzName, String banner, String bannerPrefix)
     {

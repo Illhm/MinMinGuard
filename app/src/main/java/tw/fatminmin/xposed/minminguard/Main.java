@@ -22,9 +22,11 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import tw.fatminmin.xposed.minminguard.blocker.ApiBlocking;
 import tw.fatminmin.xposed.minminguard.blocker.Blocker;
+import tw.fatminmin.xposed.minminguard.blocker.HookDiscovery;
 import tw.fatminmin.xposed.minminguard.blocker.NameBlocking;
 import tw.fatminmin.xposed.minminguard.blocker.UrlFiltering;
 import tw.fatminmin.xposed.minminguard.blocker.Util;
+import tw.fatminmin.xposed.minminguard.blocker.WebViewRequestBlocking;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Ad2iction;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.AdMarvel;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Adbert;
@@ -299,7 +301,12 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
                         if (pref.getBoolean(packageName + "_url", false))
                         {
                             UrlFiltering.removeWebViewAds(packageName, lpparam);
+                            WebViewRequestBlocking.handle(packageName, lpparam);
                         }
+                    }
+
+                    if (pref != null && pref.getBoolean(packageName + "_discovery", false)) {
+                        HookDiscovery.enableDiscovery(packageName, lpparam);
                     }
                 }
             });
