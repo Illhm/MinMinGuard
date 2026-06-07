@@ -1,7 +1,6 @@
 package tw.fatminmin.xposed.minminguard.blocker;
 
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import tw.fatminmin.xposed.minminguard.Main;
@@ -10,12 +9,15 @@ public class ViewBlocking
 {
     public static void removeAdView(String packageName, View view)
     {
+        if (view == null || view.getContext() == null) return;
         Util.notifyRemoveAdView(view.getContext(), packageName, 1);
         removeAdView(packageName, view, true, 51);
     }
 
     private static void removeAdView(final String packageName, final View view, final boolean first, final float heightLimit)
     {
+        if (view == null) return;
+
         float adHeight = convertPixelsToDp(view.getHeight());
 
         if (first || (adHeight > 0 && adHeight <= heightLimit))
@@ -24,39 +26,49 @@ public class ViewBlocking
 
             if (params == null)
                 params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-            else
+            else if (params.height != 0)
                 params.height = 0;
 
-            view.setLayoutParams(params);
+            if (view.getLayoutParams() != params || params.height == 0) {
+                view.setLayoutParams(params);
+            }
         }
 
-        // preventing view not ready situation
-        view.post(new Runnable()
-        {
-            @Override
-            public void run()
+        if (view.isAttachedToWindow()) {
+            view.post(new Runnable()
             {
-                float adHeight = convertPixelsToDp(view.getHeight());
-
-                if (first || (adHeight > 0 && adHeight <= heightLimit))
+                @Override
+                public void run()
                 {
-                    ViewGroup.LayoutParams params = view.getLayoutParams();
+                    if (view == null || !view.isAttachedToWindow()) return;
 
-                    if (params == null)
-                        params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-                    else
-                        params.height = 0;
+                    float adHeight = convertPixelsToDp(view.getHeight());
 
-                    view.setLayoutParams(params);
+                    if (first || (adHeight > 0 && adHeight <= heightLimit))
+                    {
+                        ViewGroup.LayoutParams params = view.getLayoutParams();
+
+                        if (params == null)
+                            params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+                        else if (params.height != 0)
+                            params.height = 0;
+
+                        if (view.getLayoutParams() != params || params.height == 0) {
+                            view.setLayoutParams(params);
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
 
         if (view.getParent() != null && view.getParent() instanceof ViewGroup)
         {
             ViewGroup parent = (ViewGroup) view.getParent();
 
-            removeAdView(packageName, parent, false, heightLimit);
+            // Check if we can safely collapse parent
+            if (parent.getChildCount() <= 1) {
+                removeAdView(packageName, parent, false, heightLimit);
+            }
         }
     }
 
@@ -67,6 +79,7 @@ public class ViewBlocking
         if(Main.resources != null)
             metrics = Main.resources.getDisplayMetrics();
 
+        if (metrics.densityDpi == 0) return 0;
         return px / (metrics.densityDpi / 160f);
     }
 }

@@ -3,7 +3,6 @@ package tw.fatminmin.xposed.minminguard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.content.res.XModuleResources;
 import android.os.Build;
 
 import java.io.File;
@@ -59,9 +58,9 @@ import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Madvertise;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.MasAd;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.MdotM;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Millennial;
-import tw.fatminmin.xposed.minminguard.blocker.adnetwork.MoPub;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.MobFox;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Mobclix;
+import tw.fatminmin.xposed.minminguard.blocker.adnetwork.MoPub;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Nend;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Og;
 import tw.fatminmin.xposed.minminguard.blocker.adnetwork.Onelouder;
@@ -82,6 +81,7 @@ import tw.fatminmin.xposed.minminguard.blocker.custom_mod.NextMedia;
 import tw.fatminmin.xposed.minminguard.blocker.custom_mod.OneWeather;
 import tw.fatminmin.xposed.minminguard.blocker.custom_mod.Viafree;
 import tw.fatminmin.xposed.minminguard.blocker.custom_mod._2chMate;
+import android.content.res.XModuleResources;
 
 public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
 {
@@ -102,9 +102,19 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
             /* Custom Mod*/
     };
 
+    private static Set<String> hookedPackages = new HashSet<>();
+
     private static boolean isEnabled(SharedPreferences pref, String pkgName)
     {
+        if (pref == null) return false;
+
+        if (pref instanceof XSharedPreferences) {
+            ((XSharedPreferences) pref).reload();
+        }
+
         String mode = pref.getString(Common.KEY_MODE, Common.VALUE_MODE_BLACKLIST);
+
+        if (mode == null) mode = Common.VALUE_MODE_BLACKLIST;
 
         if (mode.equals(Common.VALUE_MODE_AUTO))
         {
@@ -171,16 +181,18 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
         {
             resources = XModuleResources.createInstance(MODULE_PATH, null);
             byte[] array = XposedHelpers.assetAsByteArray(resources, "host/output_file");
-            String decoded = new String(array);
-            String[] sUrls = decoded.split("\n");
-
-            Collections.addAll(patterns, sUrls);
+            if (array != null) {
+                String decoded = new String(array);
+                String[] sUrls = decoded.split("\n");
+                Collections.addAll(patterns, sUrls);
+            }
 
             array = XposedHelpers.assetAsByteArray(resources, "host/mmg_pattern");
-            decoded = new String(array);
-            sUrls = decoded.split("\n");
-
-            Collections.addAll(patterns, sUrls);
+            if (array != null) {
+                String decoded = new String(array);
+                String[] sUrls = decoded.split("\n");
+                Collections.addAll(patterns, sUrls);
+            }
         }
         catch (Exception e)
         {
@@ -191,7 +203,11 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
     @Override
     public void handleLoadPackage(final LoadPackageParam lpparam)
     {
-        if (lpparam.packageName.equals(MY_PACKAGE_NAME)) {
+        if (lpparam == null || lpparam.packageName == null) return;
+
+        final String packageName = lpparam.packageName;
+
+        if (packageName.equals(MY_PACKAGE_NAME)) {
             XposedHelpers.findAndHookMethod("tw.fatminmin.xposed.minminguard.blocker.Util", lpparam.classLoader, "xposedEnabled", XC_MethodReplacement.returnConstant(true));
             if (xposedVersionCode >= 93)
                 XposedHelpers.findAndHookMethod("tw.fatminmin.xposed.minminguard.Common", lpparam.classLoader, "getPrefMode", XC_MethodReplacement.returnConstant(Context.MODE_WORLD_READABLE));
@@ -217,6 +233,9 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
          * Note that this implies a) hooking System Framework in LSposed Manager and b) needs a reboot after enabling an app in MinMinGuard
          * because only android can access com.android.server.pm.permission.PermissionManagerService !!!
          *
+         * Important: QUERY_ALL_PACKAGES is a highly sensitive permission. Its injection here must be minimal and closely guarded
+         * so it only affects target apps managed by MinMinGuard to prevent widespread abuse.
+         *
          * The implementation is based on Mino260806's snippet (Thanks!)
          * https://forum.xda-developers.com/t/xposed-for-devs-how-to-dynamically-declare-permissions-for-a-target-app-without-altering-its-manifest-and-changing-its-signature.4440379/post-86833435
          *
@@ -225,65 +244,67 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
          * https://github.com/Lawiusz/xposed_lockscreen_visualizer/blob/master/app/src/main/java/pl/lawiusz/lockscreenvisualizerxposed/PermGrant.java
          */
         if (Build.VERSION.SDK_INT > 29) {
-            if (lpparam.packageName.equals("android")) {
+            if (packageName.equals("android")) {
                 try {
-                    XposedBridge.hookAllMethods(XposedHelpers.findClass("com.android.server.pm.permission.PermissionManagerService", lpparam.classLoader), "restorePermissionState", new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            String pkgName = (String) XposedHelpers.getObjectField(param.args[0], "packageName");
-                            Util.log(MY_PACKAGE_NAME, "Package  " + pkgName + " is requesting permissions");
-                            if (isEnabled(pref, pkgName)) {
-                                List<String> permissions = (List<String>) XposedHelpers.getObjectField(param.args[0], "requestedPermissions");
-                                String query_all_perm = "android.permission.QUERY_ALL_PACKAGES";
-                                if (!permissions.contains(query_all_perm)) {
-                                    permissions.add(query_all_perm);
-                                    Util.log(MY_PACKAGE_NAME, "Added " + query_all_perm + " permission to " + pkgName);
+                    Class<?> pmsClass = XposedHelpers.findClassIfExists("com.android.server.pm.permission.PermissionManagerService", lpparam.classLoader);
+                    if (pmsClass != null) {
+                        XposedBridge.hookAllMethods(pmsClass, "restorePermissionState", new XC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                if (param.args == null || param.args.length == 0 || param.args[0] == null) return;
+
+                                String pkgName = (String) XposedHelpers.getObjectField(param.args[0], "packageName");
+                                if (pkgName == null) return;
+
+                                if (isEnabled(pref, pkgName)) {
+                                    List<String> permissions = (List<String>) XposedHelpers.getObjectField(param.args[0], "requestedPermissions");
+                                    if (permissions != null) {
+                                        String query_all_perm = "android.permission.QUERY_ALL_PACKAGES";
+                                        if (!permissions.contains(query_all_perm)) {
+                                            permissions.add(query_all_perm);
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 } catch (Exception e) {
                     Util.log(MY_PACKAGE_NAME, "PermissionManagerService -> " + e);
                 }
             }
         }
 
-        /**
-         * https://developer.android.com/reference/android/app/Application.html#onCreate()
-         * wait for the app started to get remote preferences
-         */
-        XposedHelpers.findAndHookMethod("android.app.Application", lpparam.classLoader, "onCreate", new XC_MethodHook()
-        {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param)
+        if (hookedPackages.contains(packageName)) return;
+        hookedPackages.add(packageName);
+
+        try {
+            XposedHelpers.findAndHookMethod("android.app.Application", lpparam.classLoader, "onCreate", new XC_MethodHook()
             {
-                final String packageName = lpparam.packageName;
-                Context context = Util.getCurrentApplication();
-
-                if (null == context)
+                @Override
+                protected void afterHookedMethod(MethodHookParam param)
                 {
-                    Util.log(packageName, "failed to get context");
-                    return;
-                }
+                    Context context = Util.getCurrentApplication();
 
-                if (isEnabled(pref, packageName))
-                {
-                    Util.log(packageName, "is enabled for MinMinGuard");
-
-                    // Api based blocking
-                    ApiBlocking.handle(packageName, lpparam, param);
-                    appSpecific(packageName, lpparam);
-
-                    // Name based blocking
-                    NameBlocking.nameBasedBlocking(packageName, lpparam);
-
-                    // url filtering
-                    if (pref.getBoolean(packageName + "_url", false))
+                    if (null == context)
                     {
-                        UrlFiltering.removeWebViewAds(packageName, lpparam);
+                        return;
+                    }
+
+                    if (isEnabled(pref, packageName))
+                    {
+                        ApiBlocking.handle(packageName, lpparam, param);
+                        appSpecific(packageName, lpparam);
+                        NameBlocking.nameBasedBlocking(packageName, lpparam);
+
+                        if (pref.getBoolean(packageName + "_url", false))
+                        {
+                            UrlFiltering.removeWebViewAds(packageName, lpparam);
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (Throwable t) {
+            Util.log(MY_PACKAGE_NAME, "Failed to hook Application.onCreate in " + packageName);
+        }
     }
 }
