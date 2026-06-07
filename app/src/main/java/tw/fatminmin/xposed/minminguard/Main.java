@@ -104,7 +104,7 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
             /* Custom Mod*/
     };
 
-    private static Set<String> hookedPackages = new HashSet<>();
+    private static Set<String> hookedPackages = Collections.synchronizedSet(new HashSet<String>());
 
     private static boolean isEnabled(SharedPreferences pref, String pkgName)
     {
@@ -155,10 +155,7 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
 
         MODULE_PATH = startupParam.modulePath;
 
-        if(xposedVersionCode < 90)
-            UnpackResources();
-        else
-            Util.log(MY_PACKAGE_NAME, "Skipping resource unpacking for now");
+        UnpackResources();
 
         Util.notifyWorker = Executors.newSingleThreadExecutor();
 
@@ -195,10 +192,13 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
                 String[] sUrls = decoded.split("\n");
                 Collections.addAll(patterns, sUrls);
             }
+            if (patterns.isEmpty()) {
+                Util.log(MY_PACKAGE_NAME, "Warning: Patterns empty after unpacking.");
+            }
         }
         catch (Exception e)
         {
-
+            Util.log(MY_PACKAGE_NAME, "Failed to load patterns from resources, URL filtering may be disabled.");
         }
     }
 
@@ -276,8 +276,8 @@ public class Main implements IXposedHookZygoteInit, IXposedHookLoadPackage
             }
         }
 
-        if (hookedPackages.contains(packageName)) return;
-        hookedPackages.add(packageName);
+        String processKey = packageName + ":" + lpparam.processName;
+        if (!hookedPackages.add(processKey)) return;
 
         try {
             XposedHelpers.findAndHookMethod("android.app.Application", lpparam.classLoader, "onCreate", new XC_MethodHook()
