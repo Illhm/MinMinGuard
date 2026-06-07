@@ -8,12 +8,15 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import tw.fatminmin.xposed.minminguard.Main;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by fatminmin on 2015/10/27.
  */
-//TODO Use newer XposedHelpers class, Fix formatting
 public final class NameBlocking
 {
+    private static Map<String, Boolean> cache = new HashMap<>();
 
     private static boolean matchBannerName(String clazzName, String banner, String bannerPrefix)
     {
@@ -28,13 +31,26 @@ public final class NameBlocking
     // return adnetwork name
     private static Boolean isAdView(Context context, String pkgName, String clazzName)
     {
-        // android widgets
-        if (clazzName.startsWith("android"))
-            return false;
+        if (clazzName == null) return false;
 
-        // corner case
-        if (clazzName.startsWith("com.google.ads"))
+        if (cache.containsKey(clazzName)) {
+            return cache.get(clazzName);
+        }
+
+        if (clazzName.startsWith("android.") || clazzName.startsWith("androidx.") || clazzName.startsWith("com.google.android.material.")) {
+            cache.put(clazzName, false);
+            return false;
+        }
+
+        if (clazzName.equals("android.widget.FrameLayout") || clazzName.equals("android.widget.RelativeLayout") || clazzName.equals("android.widget.LinearLayout")) {
+            cache.put(clazzName, false);
+            return false;
+        }
+
+        if (clazzName.startsWith("com.google.ads")) {
+            cache.put(clazzName, true);
             return true;
+        }
 
         for (Blocker blocker : Main.blockers)
         {
@@ -42,24 +58,28 @@ public final class NameBlocking
             String banner = blocker.getBanner();
             String bannerPrefix = blocker.getBannerPrefix();
 
-            // prefix is used to detect adview obfuscate by proguard
             if (matchBannerName(clazzName, banner, bannerPrefix))
             {
-                Util.notifyAdNetwork(context, pkgName, name);
-
+                if (context != null) {
+                    Util.notifyAdNetwork(context, pkgName, name);
+                }
+                cache.put(clazzName, true);
                 return true;
             }
         }
+
+        cache.put(clazzName, false);
         return false;
     }
 
     private static Boolean isAdView(Context context, String pkgName, View view)
     {
-        Class clazz = view.getClass();
-        // find also parent classes
-        int level = 1;
+        if (view == null) return false;
 
-        for (int i = 0; i < level && clazz != null; i++)
+        Class<?> clazz = view.getClass();
+        int maxDepth = 5;
+
+        for (int i = 0; i < maxDepth && clazz != null && clazz != Object.class; i++)
         {
             String clazzName = clazz.getName();
 
@@ -74,11 +94,11 @@ public final class NameBlocking
 
     private static void clearAdViewInLayout(final String packageName, final View view)
     {
+        if (view == null) return;
 
         if (isAdView(view.getContext(), packageName, view))
         {
             ViewBlocking.removeAdView(packageName, view);
-            Util.log(packageName, "clearAdViewInLayout: " + view.getClass().getName());
         }
 
         if (view instanceof ViewGroup)
@@ -96,15 +116,14 @@ public final class NameBlocking
     {
         Util.hookAllMethods("android.view.ViewGroup", lpparam.classLoader, "addView", new XC_MethodHook()
         {
-
             @Override
             protected void beforeHookedMethod(MethodHookParam param)
             {
+                if (param.args == null || param.args.length == 0) return;
                 View view = (View) param.args[0];
 
                 if (view != null && isAdView(view.getContext(), pkgName, view))
                 {
-                    Util.log(pkgName, "NameBasedBlocking before addView: " + view.getClass().getName());
                     ViewBlocking.removeAdView(pkgName, view);
                 }
             }
@@ -112,11 +131,11 @@ public final class NameBlocking
             @Override
             protected void afterHookedMethod(MethodHookParam param)
             {
+                if (param.args == null || param.args.length == 0) return;
                 View view = (View) param.args[0];
 
                 if (view != null && isAdView(view.getContext(), pkgName, view))
                 {
-                    Util.log(pkgName, "NameBasedBlocking after addView: " + view.getClass().getName());
                     ViewBlocking.removeAdView(pkgName, view);
                 }
             }
@@ -127,7 +146,10 @@ public final class NameBlocking
             @Override
             protected void afterHookedMethod(MethodHookParam param)
             {
+                if (param.thisObject == null) return;
                 Activity ac = (Activity) (param.thisObject);
+                if (ac.getWindow() == null || ac.getWindow().getDecorView() == null) return;
+
                 ViewGroup root = ac.getWindow().getDecorView().findViewById(android.R.id.content);
 
                 clearAdViewInLayout(pkgName, root);
@@ -136,22 +158,10 @@ public final class NameBlocking
 
         Util.hookAllMethods("android.view.LayoutInflater", lpparam.classLoader, "inflate", new XC_MethodHook()
         {
-
-            /*
-              http://developer.android.com/intl/zh-tw/reference/android/view/LayoutInflater.html
-              inflate(int resource, ViewGroup root)
-              inflate(XmlPullParser parser, ViewGroup root)
-              inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot)
-              inflate(int resource, ViewGroup root, boolean attachToRoot)
-
-                Returns
-                The root View of the inflated hierarchy. If root was supplied and attachToRoot is true,
-                this is root; otherwise it is the root of the inflated XML file.
-             */
-
             @Override
             protected void afterHookedMethod(MethodHookParam param)
             {
+                if (param.getResult() == null) return;
                 View root = (View) param.getResult();
 
                 if (root != null)
