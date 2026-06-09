@@ -17,11 +17,11 @@ public class Vungle extends Blocker
     {
         boolean result = false;
 
-        result = ApiBlocking.blockAdFunctionWithResult(packageName, VUNGLE_WARREN_STORAGE, "findValidAdvertisementForPlacement", null, lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, VUNGLE_WARREN, "loadAd", lpparam);
+        result = ApiBlocking.blockAdFunctionWithSafeDefault(packageName, VUNGLE_WARREN_STORAGE, "findValidAdvertisementForPlacement", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, VUNGLE_WARREN, "loadAd", lpparam);
 
-        result |= ApiBlocking.blockAdFunction(packageName, VUNGLE_PUBLISHER, "loadAd", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, VUNGLE_PUBLISHER, "isAdPlayable", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, VUNGLE_PUBLISHER, "loadAd", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, VUNGLE_PUBLISHER, "isAdPlayable", lpparam);
 
         return result;
     }

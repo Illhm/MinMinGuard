@@ -23,42 +23,18 @@ public class WebViewRequestBlocking {
             if (webViewClientClass == null) return;
 
             // Hook for older APIs (API < 21)
-            XposedBridge.hookAllMethods(webViewClientClass, "shouldInterceptRequest", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    try {
-                        if (param.args == null || param.args.length < 2) return;
-
-                        // the signature is shouldInterceptRequest(WebView view, String url)
-                        if (param.args[1] instanceof String) {
-                            String url = (String) param.args[1];
-                            if (shouldBlock(url)) {
-                                param.setResult(createEmptyResponse());
-                            }
-                        }
-                    } catch (Throwable t) {
-                        // ignore
-                    }
-                }
-            });
-
-            // Hook for newer APIs (API >= 21)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                XposedBridge.hookAllMethods(webViewClientClass, "shouldInterceptRequest", new XC_MethodHook() {
+            try {
+                XposedHelpers.findAndHookMethod(webViewClientClass, "shouldInterceptRequest", "android.webkit.WebView", String.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         try {
                             if (param.args == null || param.args.length < 2) return;
 
-                            // the signature is shouldInterceptRequest(WebView view, WebResourceRequest request)
-                            if (param.args[1] instanceof WebResourceRequest) {
-                                WebResourceRequest request = (WebResourceRequest) param.args[1];
-                                Uri uri = request.getUrl();
-                                if (uri != null) {
-                                    String url = uri.toString();
-                                    if (shouldBlock(url)) {
-                                        param.setResult(createEmptyResponse());
-                                    }
+                            // the signature is shouldInterceptRequest(WebView view, String url)
+                            if (param.args[1] instanceof String) {
+                                String url = (String) param.args[1];
+                                if (shouldBlock(url)) {
+                                    param.setResult(createEmptyResponse());
                                 }
                             }
                         } catch (Throwable t) {
@@ -66,6 +42,38 @@ public class WebViewRequestBlocking {
                         }
                     }
                 });
+            } catch (Throwable t) {
+                Util.log("WebViewRequestBlocking", "Failed to hook shouldInterceptRequest(WebView, String) in " + packageName);
+            }
+
+            // Hook for newer APIs (API >= 21)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                try {
+                    XposedHelpers.findAndHookMethod(webViewClientClass, "shouldInterceptRequest", "android.webkit.WebView", WebResourceRequest.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            try {
+                                if (param.args == null || param.args.length < 2) return;
+
+                                // the signature is shouldInterceptRequest(WebView view, WebResourceRequest request)
+                                if (param.args[1] instanceof WebResourceRequest) {
+                                    WebResourceRequest request = (WebResourceRequest) param.args[1];
+                                    Uri uri = request.getUrl();
+                                    if (uri != null) {
+                                        String url = uri.toString();
+                                        if (shouldBlock(url)) {
+                                            param.setResult(createEmptyResponse());
+                                        }
+                                    }
+                                }
+                            } catch (Throwable t) {
+                                // ignore
+                            }
+                        }
+                    });
+                } catch (Throwable t) {
+                    Util.log("WebViewRequestBlocking", "Failed to hook shouldInterceptRequest(WebView, WebResourceRequest) in " + packageName);
+                }
             }
 
             Util.log("WebViewRequestBlocking", "Enabled WebView request interception for " + packageName);
@@ -76,28 +84,51 @@ public class WebViewRequestBlocking {
     }
 
     private static boolean shouldBlock(String url) {
-        if (url == null) return false;
+        if (url == null || url.trim().isEmpty()) return false;
+
+        // Strip query string for logging and simpler matching
+        String cleanUrl = url;
+        int queryIndex = url.indexOf('?');
+        if (queryIndex > 0) {
+            cleanUrl = url.substring(0, queryIndex);
+        }
+
+        if (AdHeuristic.isRewarded(cleanUrl)) {
+            Util.log("WebViewRequestBlocking", "Allowed rewarded ad: " + cleanUrl);
+            return false;
+        }
 
         try {
             Uri uri = Uri.parse(url);
             String host = uri.getHost();
+
+            cleanUrl = cleanUrl.toLowerCase().trim();
+
             if (host != null) {
+                host = host.toLowerCase().trim();
                 for (String adUrl : Main.patterns) {
-                    if (host.contains(adUrl) || url.contains(adUrl)) {
-                        return true;
-                    }
-                }
-            } else {
-                for (String adUrl : Main.patterns) {
-                    if (url.contains(adUrl)) {
+                    if (adUrl == null || adUrl.trim().isEmpty()) continue;
+                    String pattern = adUrl.toLowerCase().trim();
+                    if (host.contains(pattern)) {
                         return true;
                     }
                 }
             }
+
+            for (String adUrl : Main.patterns) {
+                if (adUrl == null || adUrl.trim().isEmpty()) continue;
+                String pattern = adUrl.toLowerCase().trim();
+                if (cleanUrl.contains(pattern)) {
+                    return true;
+                }
+            }
         } catch (Throwable t) {
             // fallback if URI parse fails
+            cleanUrl = cleanUrl.toLowerCase().trim();
             for (String adUrl : Main.patterns) {
-                if (url.contains(adUrl)) {
+                if (adUrl == null || adUrl.trim().isEmpty()) continue;
+                String pattern = adUrl.toLowerCase().trim();
+                if (cleanUrl.contains(pattern)) {
                     return true;
                 }
             }

@@ -23,7 +23,6 @@ public class Applovin extends Blocker
 
         result = ApiBlocking.blockAdFunction(packageName, MAX_ADVIEW, "loadAd", lpparam);
         result |= ApiBlocking.blockAdFunction(packageName, MAX_INTER, "loadAd", lpparam);
-        result |= ApiBlocking.blockAdFunction(packageName, MAX_REWARDED, "loadAd", lpparam);
         result |= ApiBlocking.blockAdFunctionWithResult(packageName, SDK_ENABLED, "isEnabled", false, lpparam);
 
         result |= ApiBlocking.blockAdFunction(packageName, NATIVE_ADS, "loadNativeAds", lpparam);

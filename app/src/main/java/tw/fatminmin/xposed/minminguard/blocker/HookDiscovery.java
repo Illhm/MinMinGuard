@@ -60,14 +60,7 @@ public class HookDiscovery {
             return false;
         }
 
-        String lowerClass = className.toLowerCase();
-        return lowerClass.contains("ad") ||
-               lowerClass.contains("ads") ||
-               lowerClass.contains("banner") ||
-               lowerClass.contains("native") ||
-               lowerClass.contains("interstitial") ||
-               lowerClass.contains("reward") ||
-               lowerClass.contains("splash");
+        return AdHeuristic.isAdLike(className);
     }
 
     private static void logDiscovery(String packageName, String message, String className) {

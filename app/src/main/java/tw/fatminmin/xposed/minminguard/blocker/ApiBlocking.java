@@ -95,7 +95,19 @@ public final class ApiBlocking
                     Util.log(packageName, debugMsg);
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -156,7 +168,19 @@ public final class ApiBlocking
 
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -188,7 +212,19 @@ public final class ApiBlocking
 
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -220,7 +256,19 @@ public final class ApiBlocking
 
                     Util.notifyRemoveAdView(null, packageName, 1);
 
-                    param.setResult(new Object());
+                    Object defaultResult = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) defaultResult = false;
+                        else if (returnType == int.class) defaultResult = 0;
+                        else if (returnType == long.class) defaultResult = 0L;
+                        else if (returnType == float.class) defaultResult = 0.0f;
+                        else if (returnType == double.class) defaultResult = 0.0d;
+                        else if (returnType == short.class) defaultResult = (short) 0;
+                        else if (returnType == byte.class) defaultResult = (byte) 0;
+                        else if (returnType == char.class) defaultResult = '\u0000';
+                    }
+                    param.setResult(defaultResult);
                 }
             });
         }
@@ -304,6 +352,73 @@ public final class ApiBlocking
         return true;
     }
 
+
+    public static boolean blockAdFunctionSafe(final String packageName, final String adClass, final String adFunc, final XC_LoadPackage.LoadPackageParam lpparam)
+    {
+        try
+        {
+            Util.hookAllMethods(adClass, lpparam.classLoader, adFunc, new XC_MethodHook()
+            {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param)
+                {
+                    String debugMsg = String.format("blockAdFunctionSafe: Detect %s %s in %s", adClass, adFunc, packageName);
+                    Util.log(packageName, debugMsg);
+                    Util.notifyRemoveAdView(null, packageName, 1);
+                    param.setResult(null);
+                }
+            });
+        }
+        catch (ClassNotFoundError | NoSuchMethodError e)
+        {
+            return false;
+        }
+        catch (Throwable t) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean blockAdFunctionWithSafeDefault(final String packageName, final String adClass, final String adFunc, final XC_LoadPackage.LoadPackageParam lpparam)
+    {
+        try
+        {
+            Util.hookAllMethods(adClass, lpparam.classLoader, adFunc, new XC_MethodHook()
+            {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param)
+                {
+                    String debugMsg = String.format("blockAdFunctionWithSafeDefault: Detect %s %s in %s", adClass, adFunc, packageName);
+                    Util.log(packageName, debugMsg);
+                    Util.notifyRemoveAdView(null, packageName, 1);
+
+                    Object result = null;
+                    if (param.method instanceof java.lang.reflect.Method) {
+                        Class<?> returnType = ((java.lang.reflect.Method) param.method).getReturnType();
+                        if (returnType == boolean.class) result = false;
+                        else if (returnType == int.class) result = 0;
+                        else if (returnType == long.class) result = 0L;
+                        else if (returnType == float.class) result = 0.0f;
+                        else if (returnType == double.class) result = 0.0d;
+                        else if (returnType == short.class) result = (short) 0;
+                        else if (returnType == byte.class) result = (byte) 0;
+                        else if (returnType == char.class) result = '\u0000';
+                    }
+                    param.setResult(result);
+                }
+            });
+        }
+        catch (ClassNotFoundError | NoSuchMethodError e)
+        {
+            return false;
+        }
+        catch (Throwable t) {
+            return false;
+        }
+
+        return true;
+    }
 
     public static boolean blockAdFunctionWithResultExact(final String packageName, final String adClass, final String adFunc, final Object parameter1, final Object parameter2, final Object result, final XC_LoadPackage.LoadPackageParam lpparam)
     {

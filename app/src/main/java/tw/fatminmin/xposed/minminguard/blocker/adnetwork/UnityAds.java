@@ -14,9 +14,9 @@ public class UnityAds extends Blocker
     {
         boolean result = false;
 
-        result = ApiBlocking.blockAdFunction(packageName, UnityAds, "show", lpparam);
-        result |= ApiBlocking.blockAdFunctionWithResult(packageName, UnityAds, "canShow", false, lpparam);
-        result |= ApiBlocking.blockAdFunctionWithResult(packageName, UnityAds, "canShowAds", false, lpparam);
+        result = ApiBlocking.blockAdFunctionWithSafeDefault(packageName, UnityAds, "show", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, UnityAds, "canShow", lpparam);
+        result |= ApiBlocking.blockAdFunctionWithSafeDefault(packageName, UnityAds, "canShowAds", lpparam);
 
         return result;
     }
